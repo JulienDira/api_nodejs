@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  auth-service:
+    build: ./services/auth-service
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongo
+
+  post-service:
+    build: ./services/post-service
+    ports:
+      - "3002:3002"
+    depends_on:
+      - mongo
+
+  like-service:
+    build: ./services/like-service
+    ports:
+      - "3003:3003"
+    depends_on:
+      - mongo
+
+  # frontend:
+  #   build: ./frontend
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - VITE_AUTH_URL=http://localhost:3001/api
+  #     - VITE_POST_URL=http://localhost:3002/api
+  #     - VITE_LIKE_URL=http://localhost:3003/api
+  #   depends_on:
+  #     - auth-service
+  #     - post-service
+  #     - like-service
+
+volumes:
+  mongo-data:
