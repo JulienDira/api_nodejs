@@ -33,19 +33,21 @@ export const login = async (req, res) => {
   res.json({ token });
 };
 
-export const forgotPassword = async (req, res) => {
-  const { userName, newPassword } = req.body;
-  if (!userName || !newPassword) return res.status(400).json({ error: 'Missing fields' });
+export const changePassword = async (req, res) => {
+  const { userName, oldPassword, newPassword } = req.body;
+  if (!userName || !oldPassword || !newPassword) return res.status(400).json({ error: 'Missing fields' });
 
   try {
     const user = await User.findOne({ userName });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const hashed = await bcrypt.hash(newPassword, 10);
-    user.password = hashed;
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) return res.status(401).json({ error: 'Old password is incorrect' });
+
+    user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
 
-    res.status(200).json({ message: 'Password updated' });
+    res.status(200).json({ message: 'Password changed successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
