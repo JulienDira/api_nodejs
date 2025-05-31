@@ -1,6 +1,7 @@
 {
   "name": "post-service",
   "version": "1.0.0",
+  "type": "module",
   "description": "## ➕ Fonctionnalités -   Inscription sécurisée (bcrypt) -   Connexion avec token (JWT recommandé) -   Récupération de mot de passe (lien / OTP simplifié) -   Validation des champs -   Stockage MongoDB",
   "main": "index.js",
   "scripts": {
