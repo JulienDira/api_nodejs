@@ -8,7 +8,7 @@ import Loader from './components/common/Loader';
 
 import { useAuth } from './hooks/useAuth';
 import { fetchPosts, createPost, deletePost, updatePost } from './services/postService';
-import { likePost, unlikePost } from './services/likeService';
+import { likePost, unlikePost, getLikesByPost } from './services/likeService';
 
 const App = () => {
   const { token, user, loginUser, logoutUser } = useAuth();
@@ -35,7 +35,15 @@ const App = () => {
     setLoading(true);
     try {
       const { data } = await fetchPosts(token);
-      setPosts(data);
+      
+      // Utiliser directement les données de l'API qui contiennent déjà likesCount
+      const enrichedPosts = data.map(post => ({
+        ...post,
+        likes: [], // On garde un tableau vide pour la compatibilité
+        // likesCount est déjà fourni par l'API
+      }));
+
+      setPosts(enrichedPosts);
     } catch (error) {
       toast.error("Erreur lors du chargement des posts");
       console.error('Fetch posts error:', error);
@@ -44,33 +52,80 @@ const App = () => {
     }
   };
 
+  // Fonction pour charger les likes détaillés seulement quand nécessaire (pour afficher la liste)
+  const loadPostLikes = async (postId) => {
+    try {
+      const likesResponse = await getLikesByPost(token, postId);
+      return likesResponse.data || [];
+    } catch (error) {
+      console.error('Erreur lors du chargement des likes:', error);
+      return [];
+    }
+  };
+
   const handleLike = async (id) => {
     try {
       await likePost(token, id);
-      setPosts(posts.map(p => 
-        p._id === id 
-          ? { ...p, likes: [...(p.likes || []), { userId: user._id, username: user.username }] } 
-          : p
-      ));
+      
+      // Mise à jour optimiste du compteur seulement
+      setPosts(posts.map(p => {
+        if (p._id === id) {
+          return { 
+            ...p, 
+            likesCount: (p.likesCount || 0) + 1
+          };
+        }
+        return p;
+      }));
+      
       toast.success("Post liké !");
     } catch (error) {
       toast.error("Erreur lors du like");
       console.error('Like error:', error);
+      
+      // En cas d'erreur, recharger tous les posts pour avoir les données exactes
+      fetchAllPosts();
     }
   };
 
   const handleUnlike = async (id) => {
     try {
       await unlikePost(token, id);
-      setPosts(posts.map(p => 
-        p._id === id 
-          ? { ...p, likes: (p.likes || []).filter(like => like.userId !== user._id) } 
-          : p
-      ));
+      
+      // Mise à jour optimiste du compteur seulement
+      setPosts(posts.map(p => {
+        if (p._id === id) {
+          return { 
+            ...p, 
+            likesCount: Math.max((p.likesCount || 0) - 1, 0)
+          };
+        }
+        return p;
+      }));
+      
       toast.success("Like retiré");
     } catch (error) {
       toast.error("Erreur lors du unlike");
       console.error('Unlike error:', error);
+      
+      // En cas d'erreur, recharger tous les posts pour avoir les données exactes
+      fetchAllPosts();
+    }
+  };
+
+  const handleShowPostLikes = async (post) => {
+    // Charger les likes détaillés seulement pour l'affichage de la liste
+    try {
+      const freshLikes = await loadPostLikes(post._id);
+      return {
+        ...post,
+        likes: freshLikes,
+        // Garder le likesCount existant ou utiliser la longueur des likes chargés
+        likesCount: post.likesCount || freshLikes.length
+      };
+    } catch (error) {
+      console.error('Erreur lors du chargement des likes:', error);
+      return post;
     }
   };
 
@@ -109,7 +164,15 @@ const App = () => {
     try {
       setLoading(true);
       const { data } = await createPost(token, postContent.trim());
-      setPosts([data, ...posts]);
+      
+      // Nouveau post avec likesCount initial à 0
+      const newPost = {
+        ...data,
+        likes: [],
+        likesCount: 0
+      };
+      
+      setPosts([newPost, ...posts]);
       setPostContent('');
       toast.success("Post créé avec succès !");
     } catch (error) {
@@ -182,6 +245,7 @@ const App = () => {
               onUnlike={handleUnlike}
               onDelete={handleDelete}
               onEdit={handleEdit}
+              onShowLikes={handleShowPostLikes}
               isLoading={loading}
             />
           )}

@@ -13,6 +13,7 @@ const PostsPage = ({
   onUnlike, 
   onDelete, 
   onEdit,
+  onShowLikes,
   isLoading = false 
 }) => {
   const [selectedPost, setSelectedPost] = useState(null);
@@ -33,9 +34,21 @@ const PostsPage = ({
   const safeForm = form || {};
   const safePosts = posts || [];
 
-  const handleShowLikes = (post) => {
-    setSelectedPost(post);
-    setShowLikesPanel(true);
+  const handleShowLikes = async (post) => {
+    try {
+      // Si onShowLikes est fourni, l'utiliser pour obtenir les likes frais
+      if (onShowLikes) {
+        const updatedPost = await onShowLikes(post);
+        setSelectedPost(updatedPost);
+      } else {
+        setSelectedPost(post);
+      }
+      setShowLikesPanel(true);
+    } catch (error) {
+      console.error('Erreur lors de l\'affichage des likes:', error);
+      setSelectedPost(post);
+      setShowLikesPanel(true);
+    }
   };
 
   const handleCloseLikes = () => {
