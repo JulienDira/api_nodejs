@@ -10,3 +10,7 @@ export const createPost = (token, content) => axios.post(API.POSTS, { content },
 export const deletePost = (token, id) => axios.delete(`${API.POSTS}/${id}`, {
   headers: { Authorization: `Bearer ${token}` },
 });
+
+export const updatePost = (token, id, content) => axios.put(`${API.POSTS}/${id}`, { content }, {
+  headers: { Authorization: `Bearer ${token}` },
+});

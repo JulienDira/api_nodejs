@@ -1,17 +1,38 @@
 import axios from 'axios';
-import API from '../api/api';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api'; // Base API
+
+const axiosInstance = axios.create({
+  baseURL: API_URL,
+});
 
 export const likePost = (token, postId) => {
-  return axios.post(
-    `${API.LIKES}/like/${postId}`,
-    {},
-    { headers: { Authorization: `Bearer ${token}` } }
+  return axiosInstance.post(
+    '/likes',
+    { postId },
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
   );
 };
 
 export const unlikePost = (token, postId) => {
-  return axios.delete(
-    `${API.LIKES}/like/${postId}`,
-    { headers: { Authorization: `Bearer ${token}` } }
+  return axiosInstance.delete(
+    `/likes/${postId}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
   );
+};
+
+export const getLikesByPost = (token, postId) => {
+  return axiosInstance.get(`/likes/post/${postId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+export const countLikesByPost = (token, postId) => {
+  return axiosInstance.get(`/likes/count/${postId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 };
