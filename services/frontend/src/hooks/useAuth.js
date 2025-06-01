@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import * as jwtDecode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';  // Import nommé avec accolades
 import { login } from '../services/authService';
 
 export const useAuth = () => {
   const [token, setToken] = useState(localStorage.getItem('token'));
-  const [user, setUser] = useState(token ? jwtDecode.default(token) : null);
+  const [user, setUser] = useState(token ? jwtDecode(token) : null);
 
   const loginUser = async (form) => {
     const { data } = await login(form);
     localStorage.setItem('token', data.token);
     setToken(data.token);
-    setUser(jwtDecode.default(data.token));
+    setUser(jwtDecode(data.token));
   };
 
   const logoutUser = () => {
