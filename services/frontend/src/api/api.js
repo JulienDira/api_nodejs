@@ -1,7 +1,7 @@
 const API = {
-  AUTH: import.meta.env.VITE_API_AUTH,
-  POSTS: import.meta.env.VITE_API_POSTS,
-  LIKES: import.meta.env.VITE_API_LIKES,
+  AUTH: import.meta.env.VITE_AUTH_URL,
+  POSTS: import.meta.env.VITE_POST_URL,
+  LIKES: import.meta.env.VITE_LIKE_URL,
 };
 
 export default API;
