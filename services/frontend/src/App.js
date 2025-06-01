@@ -107,8 +107,8 @@ const App = () => {
           ) : (
             <PostsPage
               user={user}
-              content={postContent}
-              onContentChange={e => setPostContent(e.target.value)}
+              form={{ content: postContent }} // Correction: objet form au lieu de content
+              onChange={(e) => setPostContent(e.target.value)} // Correction: onChange au lieu de onContentChange
               onSubmit={handleCreatePost}
               posts={posts}
               onLike={handleLike}

@@ -9,15 +9,18 @@ dotenv.config();
 
 const app = express();
 
-// Autoriser les requêtes du frontend
+// Configuration CORS
 app.use(cors({
-  origin: 'http://localhost:3000', // Frontend
+  origin: 'http://localhost:3000',
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// Middleware JSON
 app.use(express.json());
 
-// Connexion Mongo
+// Connexion MongoDB
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
