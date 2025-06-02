@@ -3,7 +3,9 @@ import {
   register,
   login,
   changePassword,
-  getUserById
+  getUserById,
+  forgotPassword, 
+  resetPassword
 } from '../controllers/user.controller.js';
 import { verifyToken } from "../middleware/verifyToken.js";
 
@@ -13,5 +15,8 @@ router.post('/register', register);
 router.post('/login', login);
 router.post('/changePassword', changePassword);
 router.get('/:id', verifyToken, getUserById);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password/:token', resetPassword);
+
 
 export default router;

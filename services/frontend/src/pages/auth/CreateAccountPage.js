@@ -33,6 +33,15 @@ const CreateAccountPage = ({ form, onChange, onRegister, onBackToLogin }) => {
               placeholder="Choisissez un nom d'utilisateur"
             />
 
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={onChange}
+              placeholder="Adresse e-mail"
+              required
+            />
+
             <Input
               label="Mot de passe"
               type="password"

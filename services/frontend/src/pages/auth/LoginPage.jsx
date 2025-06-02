@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 
-const LoginPage = ({ form, onChange, onLogin, onRegister }) => {
+const LoginPage = ({ form, onChange, onLogin, onRegister, onForgotPassword }) => {
   const [rememberMe, setRememberMe] = useState(false);
 
   const handleSocialLogin = (provider) => {
@@ -64,6 +64,7 @@ const LoginPage = ({ form, onChange, onLogin, onRegister }) => {
               </div>
               <button
                 type="button"
+                onClick={onForgotPassword} // ← C'est ça qui manquait !
                 className="text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200"
               >
                 Mot de passe oublié ?
