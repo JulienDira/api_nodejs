@@ -36,12 +36,24 @@ const App = () => {
     try {
       const { data } = await fetchPosts(token);
       
-      // Utiliser directement les données de l'API qui contiennent déjà likesCount
-      const enrichedPosts = data.map(post => ({
-        ...post,
-        likes: [], // On garde un tableau vide pour la compatibilité
-        // likesCount est déjà fourni par l'API
-      }));
+      // L'API renvoie maintenant les posts avec les informations auteur
+      const enrichedPosts = data.map(post => {
+        // Vérifier le format des données reçues
+        console.log('Post reçu:', post); // Pour debug - à supprimer en production
+        
+        return {
+          ...post,
+          // Normaliser les données auteur selon ce que renvoie l'API
+          author: post.author || {
+            _id: post.authorId,
+            username: post.authorUsername || 'Utilisateur inconnu'
+          },
+          // S'assurer que likesCount existe
+          likesCount: post.likesCount || 0,
+          // Garder un tableau vide pour les likes détaillés
+          likes: post.likes || []
+        };
+      });
 
       setPosts(enrichedPosts);
     } catch (error) {
@@ -52,7 +64,7 @@ const App = () => {
     }
   };
 
-  // Fonction pour charger les likes détaillés seulement quand nécessaire (pour afficher la liste)
+  // Fonction pour charger les likes détaillés seulement quand nécessaire
   const loadPostLikes = async (postId) => {
     try {
       const likesResponse = await getLikesByPost(token, postId);
@@ -67,7 +79,7 @@ const App = () => {
     try {
       await likePost(token, id);
       
-      // Mise à jour optimiste du compteur seulement
+      // Mise à jour optimiste du compteur
       setPosts(posts.map(p => {
         if (p._id === id) {
           return { 
@@ -83,7 +95,7 @@ const App = () => {
       toast.error("Erreur lors du like");
       console.error('Like error:', error);
       
-      // En cas d'erreur, recharger tous les posts pour avoir les données exactes
+      // Recharger en cas d'erreur
       fetchAllPosts();
     }
   };
@@ -92,7 +104,7 @@ const App = () => {
     try {
       await unlikePost(token, id);
       
-      // Mise à jour optimiste du compteur seulement
+      // Mise à jour optimiste du compteur
       setPosts(posts.map(p => {
         if (p._id === id) {
           return { 
@@ -108,19 +120,17 @@ const App = () => {
       toast.error("Erreur lors du unlike");
       console.error('Unlike error:', error);
       
-      // En cas d'erreur, recharger tous les posts pour avoir les données exactes
+      // Recharger en cas d'erreur
       fetchAllPosts();
     }
   };
 
   const handleShowPostLikes = async (post) => {
-    // Charger les likes détaillés seulement pour l'affichage de la liste
     try {
       const freshLikes = await loadPostLikes(post._id);
       return {
         ...post,
         likes: freshLikes,
-        // Garder le likesCount existant ou utiliser la longueur des likes chargés
         likesCount: post.likesCount || freshLikes.length
       };
     } catch (error) {
@@ -145,7 +155,11 @@ const App = () => {
       const { data } = await updatePost(token, id, newContent);
       setPosts(posts.map(p => 
         p._id === id 
-          ? { ...p, content: newContent, updatedAt: new Date().toISOString() } 
+          ? { 
+              ...p, 
+              content: newContent, 
+              updatedAt: new Date().toISOString()
+            } 
           : p
       ));
       toast.success("Post modifié");
@@ -165,9 +179,14 @@ const App = () => {
       setLoading(true);
       const { data } = await createPost(token, postContent.trim());
       
-      // Nouveau post avec likesCount initial à 0
+      // Nouveau post avec les informations complètes
       const newPost = {
         ...data,
+        // Si l'API ne renvoie pas l'auteur lors de la création, utiliser les infos du token
+        author: data.author || {
+          _id: user.id,
+          username: user.userName
+        },
         likes: [],
         likesCount: 0
       };
@@ -194,6 +213,14 @@ const App = () => {
     }
   };
 
+  const handleLogout = () => {
+    logoutUser();
+    setView('login');
+    setPosts([]);
+    setPostContent('');
+    toast.success("Déconnexion réussie");
+  };
+
   return (
     <div className={dark ? 'dark' : ''}>
       <Toaster 
@@ -218,18 +245,24 @@ const App = () => {
         />
       ) : (
         <>
-          <div className="flex justify-end p-4 bg-gray-100 dark:bg-gray-900">
-            <button
-              onClick={() => {
-                logoutUser();
-                setView('login');
-                setPosts([]);
-                setPostContent('');
-              }}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors duration-200"
-            >
-              Déconnexion
-            </button>
+          <div className="flex justify-between items-center p-4 bg-gray-100 dark:bg-gray-900">
+            <div className="text-gray-800 dark:text-gray-200">
+              Connecté en tant que <strong>{user?.userName}</strong>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setDark(!dark)}
+                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+              >
+                {dark ? '☀️' : '🌙'}
+              </button>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+              >
+                Déconnexion
+              </button>
+            </div>
           </div>
           
           {loading && posts.length === 0 ? (

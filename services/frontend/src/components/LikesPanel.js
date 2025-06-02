@@ -65,15 +65,13 @@ const LikesPanel = ({ isOpen, onClose, post }) => {
                   >
                     <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
                       <span className="text-white font-bold">
-                        {like.username?.[0]?.toUpperCase() || 
-                         like.user?.username?.[0]?.toUpperCase() || 
+                        {like.user?.username?.[0]?.toUpperCase() || 
                          like.userId?.[0]?.toUpperCase() || 'U'}
                       </span>
                     </div>
                     <div className="flex-1">
                       <h3 className="text-white font-semibold">
-                        {like.username || 
-                         like.user?.username || 
+                        {like.user?.username || 
                          `Utilisateur ${like.userId?.slice(-4) || index + 1}`}
                       </h3>
                       <p className="text-gray-400 text-sm">
