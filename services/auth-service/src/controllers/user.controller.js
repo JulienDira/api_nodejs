@@ -52,3 +52,14 @@ export const changePassword = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+export const getUserById = async (req, res) => {
+  const user = await User.findById(req.params.id)
+    .select('userName _id')
+    .lean();
+  
+  res.json({
+    _id: user._id,
+    username: user.userName  // Normalisé pour votre post-service
+  });
+};
