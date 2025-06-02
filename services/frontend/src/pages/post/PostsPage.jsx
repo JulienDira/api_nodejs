@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import Post from '../../components/Post';
 import LikesPanel from '../../components/LikesPanel';
-import PostForm from '../../components/PostForm';
 
 const PostsPage = ({ 
   user, 
@@ -12,128 +11,91 @@ const PostsPage = ({
   onLike, 
   onUnlike, 
   onDelete, 
-  onEdit,
-  onShowLikes,
-  isLoading = false 
+  onEdit, 
+  onShowLikes, 
+  isLoading 
 }) => {
+  // État pour gérer l'affichage du LikesPanel
   const [selectedPost, setSelectedPost] = useState(null);
-  const [showLikesPanel, setShowLikesPanel] = useState(false);
+  const [isLikesPanelOpen, setIsLikesPanelOpen] = useState(false);
 
-  // Vérification de l'utilisateur
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-white">Chargement...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const safeForm = form || {};
-  const safePosts = posts || [];
-
+  // Fonction pour afficher les likes d'un post
   const handleShowLikes = async (post) => {
     try {
-      // Si onShowLikes est fourni, l'utiliser pour obtenir les likes frais
-      if (onShowLikes) {
-        const updatedPost = await onShowLikes(post);
-        setSelectedPost(updatedPost);
-      } else {
-        setSelectedPost(post);
-      }
-      setShowLikesPanel(true);
+      // Récupérer les données mises à jour du post
+      const updatedPost = await onShowLikes(post);
+      setSelectedPost(updatedPost);
+      setIsLikesPanelOpen(true);
     } catch (error) {
       console.error('Erreur lors de l\'affichage des likes:', error);
-      setSelectedPost(post);
-      setShowLikesPanel(true);
     }
   };
 
-  const handleCloseLikes = () => {
-    setShowLikesPanel(false);
+  const handleCloseLikesPanel = () => {
+    setIsLikesPanelOpen(false);
     setSelectedPost(null);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 p-4 relative overflow-hidden">
-      {/* Background effects */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      </div>
-
-      <div className="max-w-2xl mx-auto relative">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Bienvenue {user.username}
-          </h1>
-          <p className="text-gray-400">
-            Partagez vos pensées avec la communauté
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white">
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
+        {/* Formulaire de création de post */}
+        <div className="mb-8 p-6 bg-black/30 backdrop-blur-sm rounded-2xl border border-white/10">
+          <h2 className="text-xl font-bold mb-4 text-center">
+            Créer un nouveau post
+          </h2>
+          <textarea
+            className="w-full bg-black/30 border border-white/10 rounded-xl p-4 text-white placeholder-gray-400 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 resize-none"
+            rows={4}
+            placeholder="Quoi de neuf ?"
+            value={form.content}
+            onChange={onChange}
+          />
+          <div className="flex justify-end mt-4">
+            <button
+              onClick={onSubmit}
+              disabled={!form.content.trim() || isLoading}
+              className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              {isLoading ? 'Publication...' : 'Publier'}
+            </button>
+          </div>
         </div>
-
-        {/* Formulaire de création */}
-        <PostForm 
-          form={safeForm}
-          onChange={onChange}
-          onSubmit={onSubmit}
-          isLoading={isLoading}
-        />
 
         {/* Liste des posts */}
         <div className="space-y-6">
-          {safePosts.length === 0 ? (
-            <div className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl text-center">
-              <div className="mb-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">📝</span>
-                </div>
-                <p className="text-gray-400 mb-2">
-                  Aucun post pour le moment
-                </p>
-                <p className="text-gray-500 text-sm">
-                  Soyez le premier à publier quelque chose !
-                </p>
-              </div>
+          {posts.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-400 text-lg">Aucun post pour le moment</p>
+              <p className="text-gray-500 text-sm mt-2">
+                Soyez le premier à publier quelque chose !
+              </p>
             </div>
           ) : (
-            safePosts.map(post => (
-              <div 
-                key={post._id} 
-                className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl hover:shadow-3xl transition-all duration-300"
+            posts.map(post => (
+              <div
+                key={post._id}
+                className="p-6 bg-black/20 backdrop-blur-sm rounded-2xl border border-white/10 hover:border-white/20 transition-all duration-200"
               >
-                <Post 
-                  post={post} 
-                  userId={user.id || user._id} 
-                  onLike={onLike} 
-                  onUnlike={onUnlike} 
+                <Post
+                  post={post}
+                  userId={user.id || user._id}
+                  onLike={onLike}
+                  onUnlike={onUnlike}
                   onDelete={onDelete}
-                  onShowLikes={handleShowLikes}
                   onEdit={onEdit}
+                  onShowLikes={handleShowLikes} // Fonction locale
                 />
               </div>
             ))
           )}
         </div>
-
-        {/* Indicateur de chargement pour les posts */}
-        {isLoading && safePosts.length > 0 && (
-          <div className="text-center mt-6">
-            <div className="inline-flex items-center space-x-2 text-gray-400">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-              <span className="text-sm">Mise à jour...</span>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Panneau des likes */}
-      <LikesPanel 
-        isOpen={showLikesPanel}
-        onClose={handleCloseLikes}
+      {/* LikesPanel */}
+      <LikesPanel
+        isOpen={isLikesPanelOpen}
+        onClose={handleCloseLikesPanel}
         post={selectedPost}
       />
     </div>

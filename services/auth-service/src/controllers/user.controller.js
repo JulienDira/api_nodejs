@@ -41,20 +41,24 @@ export const login = async (req, res) => {
 };
 
 export const changePassword = async (req, res) => {
-  const { userName, oldPassword, newPassword } = req.body;
-  if (!userName || !oldPassword || !newPassword) return res.status(400).json({ error: 'Missing fields' });
+  const { oldPassword, newPassword } = req.body;
+
+  const userId = req.user?.id;
 
   try {
-    const user = await User.findOne({ userName });
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    const user = userId
+      ? await User.findById(userId)
+      : await User.findOne({ userName: req.body.userName });
+
+    if (!user) return res.status(404).json({ error: 'Utilisateur introuvable' });
 
     const isMatch = await bcrypt.compare(oldPassword, user.password);
-    if (!isMatch) return res.status(401).json({ error: 'Old password is incorrect' });
+    if (!isMatch) return res.status(401).json({ error: 'Ancien mot de passe incorrect' });
 
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
 
-    res.status(200).json({ message: 'Password changed successfully' });
+    res.status(200).json({ message: 'Mot de passe mis à jour' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -136,4 +140,41 @@ export const resetPassword = async (req, res) => {
   res.json({ message: 'Mot de passe mis à jour avec succès' });
 };
 
+export const getUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('_id userName email');
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur introuvable' });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateUserProfile = async (req, res) => {
+  const { userName, email } = req.body;
+
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'Utilisateur introuvable' });
+
+    user.userName = userName || user.userName;
+    user.email = email || user.email;
+
+    await user.save();
+    res.status(200).json({ message: 'Profil mis à jour' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteUserAccount = async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.user.id);
+    res.status(200).json({ message: 'Compte supprimé avec succès' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 

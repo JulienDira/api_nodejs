@@ -25,12 +25,12 @@ const LikesPanel = ({ isOpen, onClose, post }) => {
           <div className="p-6 border-b border-white/10">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-white flex items-center space-x-3">
-                <Heart className="text-red-400" size={24} />
+                <Heart className="text-red-400 fill-current animate-pulse" size={24} />
                 <span>Likes ({post.likes?.length || 0})</span>
               </h2>
               <button
                 onClick={onClose}
-                className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all duration-200"
+                className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all duration-200 hover:rotate-90"
               >
                 <X size={20} />
               </button>
@@ -58,41 +58,47 @@ const LikesPanel = ({ isOpen, onClose, post }) => {
           <div className="flex-1 overflow-y-auto p-6">
             {post.likes && post.likes.length > 0 ? (
               <div className="space-y-3">
-                {post.likes.map((like, index) => (
-                  <div 
-                    key={like.userId || like._id || index}
-                    className="flex items-center space-x-4 p-4 bg-black/20 backdrop-blur-sm rounded-2xl border border-white/5 hover:bg-black/30 transition-all duration-200"
-                  >
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                      <span className="text-white font-bold">
-                        {like.user?.username?.[0]?.toUpperCase() || 
-                         like.userId?.[0]?.toUpperCase() || 'U'}
-                      </span>
+                {post.likes.map((like, index) => {
+                  // Gestion améliorée des différents formats de données
+                  const username = like.user?.username || like.username || `Utilisateur ${index + 1}`;
+                  const userId = like.userId || like.user?._id || like.user?.id;
+                  const displayLetter = username[0]?.toUpperCase() || 'U';
+                  const likeDate = like.likedAt || like.createdAt;
+                  
+                  return (
+                    <div 
+                      key={userId || index}
+                      className="flex items-center space-x-4 p-4 bg-black/20 backdrop-blur-sm rounded-2xl border border-white/5 hover:bg-black/30 hover:border-red-500/20 transition-all duration-200 group"
+                    >
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200">
+                        <span className="text-white font-bold">
+                          {displayLetter}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-white font-semibold group-hover:text-blue-300 transition-colors duration-200">
+                          {username}
+                        </h3>
+                        <p className="text-gray-400 text-sm">
+                          {likeDate ? 
+                            new Date(likeDate).toLocaleDateString('fr-FR', {
+                              day: 'numeric',
+                              month: 'long',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            }) : 
+                            'Récemment'
+                          }
+                        </p>
+                      </div>
+                      <Heart className="text-red-400 fill-current group-hover:scale-125 transition-transform duration-200" size={20} />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-white font-semibold">
-                        {like.user?.username || 
-                         `Utilisateur ${like.userId?.slice(-4) || index + 1}`}
-                      </h3>
-                      <p className="text-gray-400 text-sm">
-                        {like.likedAt || like.createdAt ? 
-                          new Date(like.likedAt || like.createdAt).toLocaleDateString('fr-FR', {
-                            day: 'numeric',
-                            month: 'long',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          }) : 
-                          'Récemment'
-                        }
-                      </p>
-                    </div>
-                    <Heart className="text-red-400 fill-current" size={20} />
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="text-center py-12">
-                <Heart className="mx-auto text-gray-600 mb-4" size={48} />
+                <Heart className="mx-auto text-gray-600 mb-4 animate-pulse" size={48} />
                 <p className="text-gray-400">Aucun like pour le moment</p>
                 <p className="text-gray-500 text-sm mt-2">
                   Soyez le premier à aimer ce post !

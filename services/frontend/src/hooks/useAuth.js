@@ -14,8 +14,8 @@ export const useAuth = () => {
   };
 
   const registerUser = async (form) => {
-    const { data } = await register(form); // ⬅️ utilise ton service
-    return data; // tu peux aussi gérer le token ici si ton API en renvoie un
+    const { data } = await register(form);
+    return data;
   };
 
   const logoutUser = () => {
@@ -24,5 +24,9 @@ export const useAuth = () => {
     setUser(null);
   };
 
-  return { token, user, loginUser, logoutUser, registerUser }; // ⬅️ expose registerUser
+  const updateUser = (newUserData) => {
+    setUser(newUserData);
+  };
+
+  return { token, user, loginUser, logoutUser, registerUser, updateUser };
 };
