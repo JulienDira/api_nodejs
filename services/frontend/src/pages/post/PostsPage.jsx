@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import Post from '../components/Post';
-import LikesPanel from '../components/LikesPanel';
-import PostForm from '../components/PostForm';
+import Post from '../../components/Post';
+import LikesPanel from '../../components/LikesPanel';
+import PostForm from '../../components/PostForm';
 
 const PostsPage = ({ 
   user, 

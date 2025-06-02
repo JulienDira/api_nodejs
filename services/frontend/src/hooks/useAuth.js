@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { jwtDecode } from 'jwt-decode';  // Import nommé avec accolades
-import { login } from '../services/authService';
+import { jwtDecode } from 'jwt-decode';
+import { login, register } from '../services/authService'; // ⬅️ ajoute register ici
 
 export const useAuth = () => {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -13,11 +13,16 @@ export const useAuth = () => {
     setUser(jwtDecode(data.token));
   };
 
+  const registerUser = async (form) => {
+    const { data } = await register(form); // ⬅️ utilise ton service
+    return data; // tu peux aussi gérer le token ici si ton API en renvoie un
+  };
+
   const logoutUser = () => {
     localStorage.removeItem('token');
     setToken(null);
     setUser(null);
   };
 
-  return { token, user, loginUser, logoutUser };
+  return { token, user, loginUser, logoutUser, registerUser }; // ⬅️ expose registerUser
 };

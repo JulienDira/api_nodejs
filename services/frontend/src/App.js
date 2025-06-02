@@ -3,7 +3,8 @@ import { jwtDecode } from 'jwt-decode';
 import { Toaster, toast } from 'react-hot-toast';
 
 import LoginPage from './pages/auth/LoginPage';
-import PostsPage from './pages/PostsPage';
+import CreateAccountPage from './pages/auth/CreateAccountPage';
+import PostsPage from './pages/post/PostsPage';
 import Loader from './components/common/Loader';
 
 import { useAuth } from './hooks/useAuth';
@@ -11,7 +12,7 @@ import { fetchPosts, createPost, deletePost, updatePost } from './services/postS
 import { likePost, unlikePost, getLikesByPost } from './services/likeService';
 
 const App = () => {
-  const { token, user, loginUser, logoutUser } = useAuth();
+  const { token, user, loginUser, logoutUser, registerUser } = useAuth(); // ⬅️ on l'ajoute ici
   const [authForm, setAuthForm] = useState({ userName: '', password: '' });
   const [postContent, setPostContent] = useState('');
   const [posts, setPosts] = useState([]);
@@ -243,7 +244,28 @@ const App = () => {
           onLogin={handleLogin}
           onRegister={() => setView('register')}
         />
+      ) : view === 'register' ? (
+        <CreateAccountPage
+          form={authForm}
+          onChange={(e) => setAuthForm({ ...authForm, [e.target.name]: e.target.value })}
+          onRegister={async () => {
+            try {
+              if (authForm.password !== authForm.confirmPassword) {
+                toast.error("Les mots de passe ne correspondent pas");
+                return;
+              }
+              await registerUser(authForm); 
+              toast.success("Compte créé avec succès !");
+              setView('login');
+            } catch (error) {
+              toast.error("Échec de l'inscription");
+              console.error('Register error:', error);
+            }
+          }}
+          onBackToLogin={() => setView('login')}
+        />
       ) : (
+
         <>
           <div className="flex justify-between items-center p-4 bg-gray-100 dark:bg-gray-900">
             <div className="text-gray-800 dark:text-gray-200">
